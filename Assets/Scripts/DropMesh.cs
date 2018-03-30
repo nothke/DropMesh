@@ -34,40 +34,68 @@ public class DropMesh : MonoBehaviour
         int firstRowIncrement = 1;
         int secondRowIncrement = 2;
 
+        int a, b, c, d, e;
+
         for (int x = 0; x < width - 1; x++)
         {
             int y = 0;
 
             bool incomplete = false;
 
-            while (y < width)
+            while (true)
             {
                 int toEnd = width - y - 1;
 
+                // Ending
                 if (toEnd <= firstRowIncrement)
                 {
                     Debug.Log(incomplete ? "Incomplete" : "Final");
-                    break; // break for now
+
+                    if (!incomplete) // in case the row ends with a quad
+                    {
+                        a = x * width + y;
+                        b = x * width + width - 1;
+
+                        c = (x + 1) * width + y;
+                        d = (x + 1) * width + width - 1;
+
+                        Triangulate(ref tris, a, b, c, d);
+                    }
+                    else // in case the row ends with a triangle
+                    {
+                        Debug.Log(y);
+
+                        a = x * width + y;
+                        b = x * width + width - 1;
+                        c = (x + 1) * width + width - 1;
+
+                        Debug.Log(string.Format("ABC: {0}, {1}, {2}", a, b, c));
+                        tris.Add(b); tris.Add(a); tris.Add(c);
+                    }
+
+                    break;
                 }
 
                 // first row
-                int a = x * width + y;
-                int b = x * width + y + firstRowIncrement;
-                int c = x * width + y + firstRowIncrement * 2;
+                a = x * width + y;
+                b = x * width + y + firstRowIncrement;
+                c = x * width + y + firstRowIncrement * 2;
 
                 // second row
-                int d = (x + 1) * width + y;
-                int e = (x + 1) * width + y + secondRowIncrement; // here is the skipped one
+                d = (x + 1) * width + y;
+                e = (x + 1) * width + y + secondRowIncrement; // here is the skipped one
 
                 if (y + secondRowIncrement >= width) e = (x + 1) * width + width - 1;
-                if (c != e) incomplete = true;
+                if (c != e - width) incomplete = true;
 
-                TriangleFan(ref tris, a, b, c, d, e); // we add triangles to the list
+                Triangulate(ref tris, a, b, c, d, e); // we add triangles to the list
 
                 y += secondRowIncrement;
             }
 
-            if (x < 1)
+            Debug.Log("Row END");
+
+            if (x < 2)
             {
 
                 firstRowIncrement = secondRowIncrement;
@@ -81,15 +109,15 @@ public class DropMesh : MonoBehaviour
         return tmesh;
     }
 
-    void TriangleFan(ref List<int> tris, int a, int b, int c, int d)
+    void Triangulate(ref List<int> tris, int a, int b, int c, int d)
     {
         tris.Add(a); tris.Add(c); tris.Add(b);
         tris.Add(b); tris.Add(c); tris.Add(d);
     }
 
-    void TriangleFan(ref List<int> tris, int a, int b, int c, int d, int e)
+    void Triangulate(ref List<int> tris, int a, int b, int c, int d, int e)
     {
-        //Debug.Log(string.Format("Making tris from: {0}, {1}, {2}, {3}, {4}", a, b, c, d, e));
+        Debug.Log(string.Format("Making tris from: {0}, {1}, {2}, {3}, {4}", a, b, c, d, e));
 
         tris.Add(a); tris.Add(d); tris.Add(b);
         tris.Add(b); tris.Add(d); tris.Add(e);
