@@ -63,6 +63,8 @@ public class DropMesh : MonoBehaviour
                     }
                     else // in case the row ends with a triangle
                     {
+                        y = y - secondRowIncrement + firstRowIncrement;
+
                         Debug.Log(y);
 
                         a = x * width + y;
