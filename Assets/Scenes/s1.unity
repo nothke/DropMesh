@@ -287,10 +287,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1753114211}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df6080a632d924c4087a4eedb0812243, type: 3}
+  m_Script: {fileID: 11500000, guid: 1696c69e757226144b5714a7fc92b6f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 12
+  width: 8
+  length: 8
 --- !u!4 &1753114213
 Transform:
   m_ObjectHideFlags: 0
@@ -316,7 +317,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vertexNumbers: 1
-  normals: 1
+  normals: 0
   normalGizmoLength: 0.2
   triangles: 0
   gizmoScale: 1

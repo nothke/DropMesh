@@ -2,35 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using MeshXtensions;
-
-public class DropMesh : MonoBehaviour
+public class DropMesh
 {
-    TMesh tmesh;
+    public static bool[] ratios;
 
-    public int width = 8;
-    public int length = 8;
-
-    void Start()
-    {
-        Vector3[] points = new Vector3[width * length];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < length; y++)
-            {
-                float height = Mathf.PerlinNoise(x * 0.234f, y * 0.234f) * 10;
-                points[x * length + y] = new Vector3(x * x * 2, height, y);
-            }
-        }
-
-        TMesh tmesh = Simplify(points, width, length);
-        Mesh mesh = tmesh.ToMesh();
-        mesh.RecalculateNormals();
-        gameObject.InitializeMesh(mesh);
-    }
-
-    TMesh Simplify(Vector3[] vertices, int width, int length)
+    public static TMesh Get(Vector3[] vertices, int width, int length)
     {
         List<int> tris = new List<int>();
         List<Vector3> droppedVerts = new List<Vector3>();
@@ -48,12 +24,6 @@ public class DropMesh : MonoBehaviour
             }
         }
 
-        // Debug these dropped verts
-        for (int i = 0; i < droppedVerts.Count; i++)
-        {
-            Debug.DrawRay(droppedVerts[i], Vector3.up, Color.red, 1);
-        }
-
         // TRIANGLES
 
         int a, b, c, d, e;
@@ -61,7 +31,7 @@ public class DropMesh : MonoBehaviour
         int thisRowIncrement = GetRowIncrement(0);
         int nextRowIncrement;
 
-        int thisRowCount = GetRowCount(0, thisRowIncrement);
+        int thisRowCount = GetRowCount(length, thisRowIncrement);
         int nextRowCount;
 
         int thisRow0 = 0;
@@ -70,12 +40,12 @@ public class DropMesh : MonoBehaviour
         for (int x = 0; x < width - 1; x++)
         {
             nextRowIncrement = GetRowIncrement(x + 1);
-            nextRowCount = GetRowCount(x + 1, nextRowIncrement);
+            nextRowCount = GetRowCount(length, nextRowIncrement);
             nextRow0 = thisRow0 + thisRowCount;
 
             // Just output row counts for now
-            Debug.Log(thisRowCount);
-            Debug.Log("nextRow0 " + nextRow0);
+            //Debug.Log(thisRowCount);
+            //Debug.Log("nextRow0 " + nextRow0);
 
             int thisRowV = thisRow0;
             int nextRowV = nextRow0;
@@ -95,7 +65,6 @@ public class DropMesh : MonoBehaviour
                     // If the piece cannot be dropped, make a quad
                     if (b - thisRow0 < thisRowCount)
                     {
-                        Debug.Log("Quad situation");
                         Triangulate(ref tris, a, b, d, e);
                         break;
                     }
@@ -121,12 +90,12 @@ public class DropMesh : MonoBehaviour
         return tmesh;
     }
 
-    int GetRowIncrement(int row)
+    static int GetRowIncrement(int row)
     {
         return (int)Mathf.Pow(2, row);
     }
 
-    int GetRowCount(int row, int increment)
+    static int GetRowCount(int length, int increment)
     {
         int count = 0;
 
@@ -137,13 +106,13 @@ public class DropMesh : MonoBehaviour
         return count;
     }
 
-    void Triangulate(ref List<int> tris, int a, int b, int c, int d)
+    static void Triangulate(ref List<int> tris, int a, int b, int c, int d)
     {
         tris.Add(a); tris.Add(b); tris.Add(c);
         tris.Add(b); tris.Add(d); tris.Add(c);
     }
 
-    void Triangulate(ref List<int> tris, int a, int b, int c, int d, int e)
+    static void Triangulate(ref List<int> tris, int a, int b, int c, int d, int e)
     {
         //Debug.Log(string.Format("Making tris from: {0}, {1}, {2}, {3}, {4}", a, b, c, d, e));
 
