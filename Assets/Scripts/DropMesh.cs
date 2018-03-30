@@ -37,8 +37,22 @@ public class DropMesh
         int thisRow0 = 0;
         int nextRow0;
 
+        bool drop = false;
+
         for (int x = 0; x < width - 1; x++)
         {
+            if (ratios == null)
+            {
+                drop = true;
+            }
+            else
+            {
+                if (x < ratios.Length)
+                    drop = ratios[x];
+                else
+                    drop = ratios[ratios.Length - 1];
+            }
+
             nextRowIncrement = GetRowIncrement(x + 1);
             nextRowCount = GetRowCount(length, nextRowIncrement);
             nextRow0 = thisRow0 + thisRowCount;
@@ -50,32 +64,50 @@ public class DropMesh
             int thisRowV = thisRow0;
             int nextRowV = nextRow0;
 
-            while (true)
+            if (drop)
             {
-                a = thisRowV;
-                b = thisRowV + 1;
-                c = thisRowV + 2;
-
-                d = nextRowV;
-                e = nextRowV + 1;
-
-                // End condition
-                if (c >= nextRow0)
+                while (true)
                 {
-                    // If the piece cannot be dropped, make a quad
-                    if (b - thisRow0 < thisRowCount)
+                    a = thisRowV;
+                    b = thisRowV + 1;
+                    c = thisRowV + 2;
+
+                    d = nextRowV;
+                    e = nextRowV + 1;
+
+                    // End condition
+                    if (c >= nextRow0)
                     {
-                        Triangulate(ref tris, a, b, d, e);
-                        break;
+                        // If the piece cannot be dropped, make a quad
+                        if (b - thisRow0 < thisRowCount)
+                        {
+                            Triangulate(ref tris, a, b, d, e);
+                            break;
+                        }
+                        else
+                            break;
                     }
-                    else
-                        break;
+
+                    Triangulate(ref tris, a, b, c, d, e);
+
+                    thisRowV += 2;
+                    nextRowV += 1;
                 }
+            }
+            else
+            {
+                for (int y = 0; y < length - 1; y++)
+                {
+                    a = thisRowV;
+                    b = thisRowV + 1;
+                    c = nextRowV;
+                    d = nextRowV + 1;
 
-                Triangulate(ref tris, a, b, c, d, e);
+                    Triangulate(ref tris, a, b, c, d);
 
-                thisRowV += 2;
-                nextRowV += 1;
+                    thisRowV++;
+                    nextRowV++;
+                }
             }
 
             thisRowIncrement = nextRowIncrement;
