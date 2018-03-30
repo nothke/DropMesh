@@ -6,9 +6,10 @@ using MeshXtensions;
 
 public class DropMeshTest : MonoBehaviour
 {
-
     public int width = 8;
     public int length = 8;
+
+    public bool[] ratios;
 
     Mesh mesh;
 
@@ -23,11 +24,13 @@ public class DropMeshTest : MonoBehaviour
         {
             for (int y = 0; y < length; y++)
             {
-                float height = Mathf.PerlinNoise(x * 0.234f, y * 0.234f) * 10;
-                points[x * length + y] = new Vector3(x * x * 2, height, y);
+                float height = Mathf.PerlinNoise(x * 0.234f, y * 0.234f);
+                points[x * length + y] = new Vector3(x, height, y);
             }
         }
 
+        //bool[] ratios = new bool[] { false, false, true, true, false};
+        DropMesh.ratios = ratios;
         TMesh tmesh = DropMesh.Get(points, width, length);
         mesh = tmesh.ToMesh();
         mesh.RecalculateNormals();

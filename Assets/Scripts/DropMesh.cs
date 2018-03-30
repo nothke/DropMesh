@@ -9,7 +9,7 @@ public class DropMesh
     public static TMesh Get(Vector3[] vertices, int width, int length)
     {
         List<int> tris = new List<int>();
-        List<Vector3> droppedVerts = new List<Vector3>();
+        List<Vector3> verts = new List<Vector3>();
 
         int rowIncrement = 1;
 
@@ -20,7 +20,7 @@ public class DropMesh
             for (int y = 0; y < length; y++)
             {
                 if (y == (length - 1) || (y % rowIncrement) == 0)
-                    droppedVerts.Add(vertices[x * length + y]);
+                    verts.Add(vertices[x * length + y]);
             }
         }
 
@@ -37,32 +37,20 @@ public class DropMesh
         int thisRow0 = 0;
         int nextRow0;
 
-        bool drop = false;
-
         for (int x = 0; x < width - 1; x++)
         {
-            if (ratios == null)
-            {
-                drop = true;
-            }
-            else
-            {
-                if (x < ratios.Length)
-                    drop = ratios[x];
-                else
-                    drop = ratios[ratios.Length - 1];
-            }
-
             nextRowIncrement = GetRowIncrement(x + 1);
             nextRowCount = GetRowCount(length, nextRowIncrement);
             nextRow0 = thisRow0 + thisRowCount;
 
             // Just output row counts for now
-            //Debug.Log(thisRowCount);
-            //Debug.Log("nextRow0 " + nextRow0);
+            Debug.Log(thisRowCount);
+            Debug.Log("nextRow0 " + nextRow0);
 
             int thisRowV = thisRow0;
             int nextRowV = nextRow0;
+
+            bool drop = thisRowIncrement != nextRowIncrement;
 
             if (drop)
             {
@@ -96,12 +84,18 @@ public class DropMesh
             }
             else
             {
-                for (int y = 0; y < length - 1; y++)
+                for (int y = 0; y < thisRowCount - 1; y++)
                 {
+                    //Debug.LogWarning("tR0: " + thisRow0);
+                    //Debug.LogWarning("nR0: " + nextRow0);
+
                     a = thisRowV;
                     b = thisRowV + 1;
                     c = nextRowV;
                     d = nextRowV + 1;
+
+                    //if (c >= verts.Count) Debug.LogError("a is " + a + "c is " + c);
+                    //if (d >= verts.Count) Debug.LogError("b is " + b + "d is " + d);
 
                     Triangulate(ref tris, a, b, c, d);
 
@@ -117,14 +111,40 @@ public class DropMesh
 
         // Finalize
         TMesh tmesh = new TMesh();
-        tmesh.vertices = droppedVerts.ToArray();
+        tmesh.vertices = verts.ToArray();
         tmesh.triangles = tris.ToArray();
         return tmesh;
     }
 
     static int GetRowIncrement(int row)
     {
-        return (int)Mathf.Pow(2, row);
+        int pow = 0;
+
+        if (ratios == null)
+            pow = row;
+
+        for (int i = 0; i < row; i++)
+        {
+            if (GetDropRatio(i))
+                pow++;
+        }
+
+        return (int)Mathf.Pow(2, pow);
+    }
+
+    static bool GetDropRatio(int row)
+    {
+        if (ratios == null || ratios.Length == 0)
+        {
+            return true;
+        }
+        else
+        {
+            if (row < ratios.Length)
+                return ratios[row];
+            else
+                return ratios[ratios.Length - 1];
+        }
     }
 
     static int GetRowCount(int length, int increment)
